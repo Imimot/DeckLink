@@ -11,7 +11,7 @@
 @interface DeckLinkDevice ()
 {
 	IDeckLink *deckLink;
-	IDeckLinkAttributes *deckLinkAttributes;
+	IDeckLinkProfileAttributes *deckLinkAttributes;
 	IDeckLinkConfiguration *deckLinkConfiguration;
 	IDeckLinkKeyer *deckLinkKeyer;
 	IDeckLinkInput *deckLinkInput;
@@ -58,8 +58,6 @@
 
 @property (nonatomic, weak) id<DeckLinkDeviceCaptureAudioDelegate> captureAudioDelegate;
 @property (nonatomic, strong) dispatch_queue_t captureAudioDelegateQueue;
-
-@property (nonatomic, strong) __attribute__((NSObject)) CVPixelBufferPoolRef capturePixelBufferPool;
 
 // playback
 

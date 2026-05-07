@@ -44,11 +44,11 @@
 				{
 					CMPixelFormatType pixelFormat = kCMPixelFormat_422YpCbCr8;
 					
-					BMDDisplayModeSupport displayModeSupport = 0;
-					if (deckLinkInput->DoesSupportVideoMode(displayMode->GetDisplayMode(), (BMDPixelFormat)pixelFormat, bmdVideoInputFlagDefault, &displayModeSupport, NULL) == S_OK && displayModeSupport != bmdDisplayModeNotSupported)
+					bool supported = false;
+					if (deckLinkInput->DoesSupportVideoMode(bmdVideoConnectionUnspecified, displayMode->GetDisplayMode(), (BMDPixelFormat)pixelFormat, bmdNoVideoOutputConversion, bmdVideoInputFlagDefault, NULL, &supported) == S_OK && supported)
 					{
 						CMVideoFormatDescriptionRef formatDescription = NULL;
-						XCTAssertEqual(CMVideoFormatDescriptionCreateWithDeckLinkDisplayMode(displayMode, pixelFormat, displayModeSupport == bmdDisplayModeSupported, &formatDescription), noErr);
+						XCTAssertEqual(CMVideoFormatDescriptionCreateWithDeckLinkDisplayMode(displayMode, pixelFormat, true, &formatDescription), noErr);
 						XCTAssertNotNil((__bridge id)formatDescription);
 					
 						CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
@@ -88,11 +88,11 @@
 				{					
 					CMPixelFormatType pixelFormat = kCMPixelFormat_422YpCbCr8;
 					
-					BMDDisplayModeSupport displayModeSupport = 0;
-					if (deckLinkOutput->DoesSupportVideoMode(displayMode->GetDisplayMode(), (BMDPixelFormat)pixelFormat, bmdVideoInputFlagDefault, &displayModeSupport, NULL) == S_OK && displayModeSupport != bmdDisplayModeNotSupported)
+					bool supported = false;
+					if (deckLinkOutput->DoesSupportVideoMode(bmdVideoConnectionUnspecified, displayMode->GetDisplayMode(), (BMDPixelFormat)pixelFormat, bmdNoVideoOutputConversion, bmdVideoInputFlagDefault, NULL, &supported) == S_OK && supported)
 					{
 						CMVideoFormatDescriptionRef formatDescription = NULL;
-						XCTAssertEqual(CMVideoFormatDescriptionCreateWithDeckLinkDisplayMode(displayMode, pixelFormat, displayModeSupport == bmdDisplayModeSupported, &formatDescription), noErr);
+						XCTAssertEqual(CMVideoFormatDescriptionCreateWithDeckLinkDisplayMode(displayMode, pixelFormat, true, &formatDescription), noErr);
 						XCTAssertNotNil((__bridge id)formatDescription);
 						
 						CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);

@@ -68,11 +68,11 @@ static inline void CaptureQueue_dispatch_sync(dispatch_queue_t queue, dispatch_b
 			{
 				BMDPixelFormat pixelFormat = pixelFormats[index];
 					
-				BMDDisplayModeSupport support = bmdDisplayModeNotSupported;
-				if (deckLinkInput->DoesSupportVideoMode(displayModeKey, pixelFormat, bmdVideoOutputFlagDefault, &support, NULL) == S_OK && support != bmdDisplayModeNotSupported)
+				bool supported = false;
+				if (deckLinkInput->DoesSupportVideoMode(bmdVideoConnectionUnspecified, displayModeKey, pixelFormat, bmdNoVideoOutputConversion, bmdVideoOutputFlagDefault, NULL, &supported) == S_OK && supported)
 				{
 					CMVideoFormatDescriptionRef formatDescription = NULL;
-					if(CMVideoFormatDescriptionCreateWithDeckLinkDisplayMode(displayMode, pixelFormat, support == bmdDisplayModeSupported, &formatDescription) == noErr)
+					if(CMVideoFormatDescriptionCreateWithDeckLinkDisplayMode(displayMode, pixelFormat, true, &formatDescription) == noErr)
 					{
 						[formatDescriptions addObject:(__bridge id)formatDescription];
 						CFRelease(formatDescription);
@@ -196,7 +196,6 @@ static inline void CaptureQueue_dispatch_sync(dispatch_queue_t queue, dispatch_b
 		}
 		
 		self.captureActiveVideoFormatDescription = formatDescription;
-		self.capturePixelBufferPool = nil;
 		result = YES;
 	});
 	
@@ -631,8 +630,6 @@ static inline void CaptureQueue_dispatch_sync(dispatch_queue_t queue, dispatch_b
 				BMDTimeValue hardwareDuration = 0;
 				videoFrame->GetHardwareReferenceTimestamp(NSEC_PER_SEC, &hardwareTime, &hardwareDuration);
 		#endif
-				long height = videoFrame->GetHeight();
-				long rowBytes = videoFrame->GetRowBytes();
 				
 				BMDFrameFlags flags = videoFrame->GetFlags();
 				
@@ -642,36 +639,25 @@ static inline void CaptureQueue_dispatch_sync(dispatch_queue_t queue, dispatch_b
 					self.captureInputSourceConnected = captureInputSourceConnected;
 				}
 				
-				void *inputBuffer = NULL;
-				videoFrame->GetBytes(&inputBuffer);
-				
-				CVPixelBufferPoolRef pixelBufferPool = [self getPixelBufferPoolForVideoFrame:videoFrame];
-				if(pixelBufferPool == nil)
+				IDeckLinkMacVideoBuffer *macVideoBuffer = NULL;
+				if (videoFrame->QueryInterface(IID_IDeckLinkMacVideoBuffer, (void **)&macVideoBuffer) != S_OK)
 				{
-					// something bad is going on: can't create a pixel buffer pool
+					NSLog(@"%s:%d: error: couldn't get IDeckLinkMacVideoBuffer instance", __FUNCTION__, __LINE__);
 					shouldReportDroppedFrame = YES;
 				}
 				
 				CVPixelBufferRef pixelBuffer = NULL;
 				if(shouldReportDroppedFrame == NO)
 				{
-					const CVReturn pixelBufferStatus = CVPixelBufferPoolCreatePixelBuffer(NULL, pixelBufferPool, &pixelBuffer);
-					if(pixelBufferStatus != kCVReturnSuccess || pixelBuffer == nil)
+					if (macVideoBuffer->CreateCVPixelBufferRef((void **)&pixelBuffer) != S_OK)
 					{
-						// can't create a pixel buffer...
+						NSLog(@"%s:%d: error: CreateCVPixelBufferRef failed", __FUNCTION__, __LINE__);
 						shouldReportDroppedFrame = YES;
 					}
 				}
 				
 				if(shouldReportDroppedFrame == NO)
 				{
-					CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-					
-					void *outputBuffer = CVPixelBufferGetBaseAddress(pixelBuffer);
-					memcpy(outputBuffer, inputBuffer, rowBytes * height); // We are copying the whole frame each iteration, there must be a better way. CPU => CPU => GPU
-					
-					CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
-					
 					CMVideoFormatDescriptionRef formatDescription = NULL;
 					CMVideoFormatDescriptionCreateForImageBuffer(NULL, pixelBuffer, &formatDescription);
 					
@@ -721,46 +707,6 @@ static inline void CaptureQueue_dispatch_sync(dispatch_queue_t queue, dispatch_b
 	}
 }
 
-- (CVPixelBufferPoolRef)getPixelBufferPoolForVideoFrame:(IDeckLinkVideoInputFrame *)videoFrame
-{
-	CVPixelBufferPoolRef pixelBufferPool = self.capturePixelBufferPool;
-	if(pixelBufferPool == nil)
-	{
-		// if there is no pixel buffer pool yet, create it!
-	
-		CMPixelFormatType pixelFormat = videoFrame->GetPixelFormat();
-		long width = videoFrame->GetWidth();
-		long height = videoFrame->GetHeight();
-		long rowBytes = videoFrame->GetRowBytes();
-
-		NSDictionary *pixelBufferAttributes = @{
-			(__bridge NSString *)kCVPixelBufferPixelFormatTypeKey: @(pixelFormat),
-			(__bridge NSString *)kCVPixelBufferWidthKey: @(width),
-			(__bridge NSString *)kCVPixelBufferHeightKey: @(height),
-			(__bridge NSString *)kCVPixelBufferBytesPerRowAlignmentKey: @(rowBytes),
-			(__bridge NSString *)kCVPixelBufferOpenGLCompatibilityKey: @YES,
-			(__bridge NSString *)kCVPixelBufferIOSurfacePropertiesKey: @{
-				(__bridge NSString *)kCVPixelBufferIOSurfaceOpenGLTextureCompatibilityKey: @YES,
-			},
-		};
-		
-		NSDictionary *poolAttributes = @{
-			(__bridge NSString *)kCVPixelBufferPoolMinimumBufferCountKey: @(4),
-		};
-		
-		CVReturn status = CVPixelBufferPoolCreate(NULL, (__bridge CFDictionaryRef)poolAttributes, (__bridge CFDictionaryRef)pixelBufferAttributes, &pixelBufferPool);
-		if(status != kCVReturnSuccess)
-		{
-			return nil;
-		}
-		
-		self.capturePixelBufferPool = pixelBufferPool;
-		CFRelease(pixelBufferPool);
-	}
-	
-	return pixelBufferPool;
-}
-
 - (void)reportFrameDropToDelegate
 {
 	id<DeckLinkDeviceCaptureVideoDelegate> delegate = self.captureVideoDelegate;
@@ -779,8 +725,6 @@ static inline void CaptureQueue_dispatch_sync(dispatch_queue_t queue, dispatch_b
 - (void)didChangeVideoFormat:(BMDVideoInputFormatChangedEvents)changes displayMode:(IDeckLinkDisplayMode *)displayMode flags:(BMDDetectedVideoInputFormatFlags)flags
 {
 	CaptureQueue_dispatch_sync(self.captureQueue, ^{
-		self.capturePixelBufferPool = nil;
-		
 		BMDDisplayMode displayModeValue = displayMode->GetDisplayMode();
 		BMDDisplayMode pixelFormat = 0;
 		if (flags & bmdDetectedVideoInputYCbCr422)

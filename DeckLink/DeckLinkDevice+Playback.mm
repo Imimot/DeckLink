@@ -5,7 +5,6 @@
 #import "DeckLinkAudioConnection+Internal.h"
 #import "DeckLinkDevice+Internal.h"
 #import "DeckLinkKeying.h"
-#import "DeckLinkPixelBufferFrame.h"
 #import "DeckLinkVideoConnection+Internal.h"
 #import "DecklinkMetalBufferFrame.h"
 
@@ -57,11 +56,11 @@
 			{
 				BMDPixelFormat pixelFormat = pixelFormats[index];
 				
-				BMDDisplayModeSupport support = bmdDisplayModeNotSupported;
-				if (deckLinkOutput->DoesSupportVideoMode(displayModeKey, pixelFormat, bmdVideoOutputFlagDefault, &support, NULL) == S_OK && support != bmdDisplayModeNotSupported)
+				bool supported = false;
+				if (deckLinkOutput->DoesSupportVideoMode(bmdVideoConnectionUnspecified, displayModeKey, pixelFormat, bmdNoVideoOutputConversion, bmdVideoOutputFlagDefault, NULL, &supported) == S_OK && supported)
 				{
 					CMVideoFormatDescriptionRef formatDescription = NULL;
-					if(CMVideoFormatDescriptionCreateWithDeckLinkDisplayMode(displayMode, pixelFormat, support == bmdDisplayModeSupported, &formatDescription) == noErr)
+					if(CMVideoFormatDescriptionCreateWithDeckLinkDisplayMode(displayMode, pixelFormat, true, &formatDescription) == noErr)
 					{
 						[formatDescriptions addObject:(__bridge id)formatDescription];
 						CFRelease(formatDescription);
@@ -229,25 +228,18 @@
 		
 		[keyingModes addObject:DeckLinkKeyingModeNone];
 		
-		bool supportsHDKeying = false;
-		deckLinkAttributes->GetFlag(BMDDeckLinkSupportsHDKeying, &supportsHDKeying);
-		if (supportsHDKeying)
+		bool supportsInternalKeying = false;
+		deckLinkAttributes->GetFlag(BMDDeckLinkSupportsInternalKeying, &supportsInternalKeying);
+		if (supportsInternalKeying)
 		{
-			// Nobody cares for non HD-keying anymore
-			
-			bool supportsInternalKeying = false;
-			deckLinkAttributes->GetFlag(BMDDeckLinkSupportsInternalKeying, &supportsInternalKeying);
-			if (supportsInternalKeying)
-			{
-				[keyingModes addObject:DeckLinkKeyingModeInternal];
-			}
-			
-			bool supportsExternalKeying = false;
-			deckLinkAttributes->GetFlag(BMDDeckLinkSupportsExternalKeying, &supportsExternalKeying);
-			if (supportsExternalKeying)
-			{
-				[keyingModes addObject:DeckLinkKeyingModeExternal];
-			}
+			[keyingModes addObject:DeckLinkKeyingModeInternal];
+		}
+
+		bool supportsExternalKeying = false;
+		deckLinkAttributes->GetFlag(BMDDeckLinkSupportsExternalKeying, &supportsExternalKeying);
+		if (supportsExternalKeying)
+		{
+			[keyingModes addObject:DeckLinkKeyingModeExternal];
 		}
 
 		self.playbackKeyingModes = keyingModes;
@@ -429,10 +421,23 @@
 	// TODO: Potential problem with CPU/GPU overload!!! this needs to be guarded by a semaphore with inital count of 2 or more!
 
 	dispatch_async(self.frameDownloadQueue, ^{
-		// The first queue just downloads the frame from GPU to CPU RAM even if the playbackQueue is sending out data to the device.
+		// The first queue just creates an IDeckLinkVideoFrame (possibly downloading the frame from GPU to CPU RAM) even if the playbackQueue is sending out data to the device.
 		
-		DeckLinkPixelBufferFrame *frame = new DeckLinkPixelBufferFrame(pixelBuffer);
-		// IDeckLinkVideoConversion
+		IDeckLinkMacOutput *deckLinkMacOutput = NULL;
+		if (deckLinkOutput->QueryInterface(IID_IDeckLinkMacOutput, (void **)&deckLinkMacOutput) != S_OK)
+		{
+			NSLog(@"%s:%d: error: couldn't get IDeckLinkMacOutput instance", __FUNCTION__, __LINE__);
+			CFRelease(pixelBuffer);
+			return;
+		}
+
+		IDeckLinkMutableVideoFrame *frame = NULL;
+		if (deckLinkMacOutput->CreateVideoFrameFromCVPixelBufferRef(pixelBuffer, &frame) != S_OK)
+		{
+			NSLog(@"%s:%d: error: CreateVideoFrameFromCVPixelBufferRef failed", __FUNCTION__, __LINE__);
+			CFRelease(pixelBuffer);
+			return;
+		}
 		
 		dispatch_async(self.playbackQueue, ^{
 			// the second queue is sending the image data to the device immediately but don't need to wait for next download
@@ -447,7 +452,7 @@
 
 }
 
-- (void)scheduledFrameCompleted:(DeckLinkPixelBufferFrame *)frame result:(BMDOutputFrameCompletionResult)result
+- (void)scheduledFrameCompleted:(IDeckLinkVideoFrame *)frame result:(BMDOutputFrameCompletionResult)result
 {
 	frame->Release();
 	
@@ -476,13 +481,27 @@
 
 	CFRetain(pixelBuffer);
 	dispatch_async(self.frameDownloadQueue, ^{
-		// The first queue just downloads the frame from GPU to CPU RAM even if the playbackQueue is sending out data to the device.
+		// The first queue just creates an IDeckLinkVideoFrame (possibly downloading the frame from GPU to CPU RAM) even if the playbackQueue is sending out data to the device.
 		
-		DeckLinkPixelBufferFrame *frame = new DeckLinkPixelBufferFrame(pixelBuffer);
+		IDeckLinkMacOutput *deckLinkMacOutput = NULL;
+		if (deckLinkOutput->QueryInterface(IID_IDeckLinkMacOutput, (void **)&deckLinkMacOutput) != S_OK)
+		{
+			NSLog(@"%s:%d: error: couldn't get IDeckLinkMacOutput instance", __FUNCTION__, __LINE__);
+			CFRelease(pixelBuffer);
+			return;
+		}
+
+		IDeckLinkMutableVideoFrame *frame = NULL;
+		if (deckLinkMacOutput->CreateVideoFrameFromCVPixelBufferRef(pixelBuffer, &frame) != S_OK)
+		{
+			NSLog(@"%s:%d: error: CreateVideoFrameFromCVPixelBufferRef failed", __FUNCTION__, __LINE__);
+			CFRelease(pixelBuffer);
+			return;
+		}
 
 		if (flipped) {
 			
-			frame->setFlags(bmdFrameFlagFlipVertical);
+			frame->SetFlags(bmdFrameFlagFlipVertical);
 		}
 		
 		dispatch_async(self.playbackQueue, ^{

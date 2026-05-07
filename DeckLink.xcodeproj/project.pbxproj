@@ -52,8 +52,6 @@
 		5061EB7F1B17BA36003552DE /* DeckLink_042_Playback.m in Sources */ = {isa = PBXBuildFile; fileRef = 5061EB7E1B17BA36003552DE /* DeckLink_042_Playback.m */; };
 		5061EB851B18446C003552DE /* DeckLinkDeviceInternalOutputCallback.h in Headers */ = {isa = PBXBuildFile; fileRef = 5061EB831B18446C003552DE /* DeckLinkDeviceInternalOutputCallback.h */; };
 		5061EB861B18446C003552DE /* DeckLinkDeviceInternalOutputCallback.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5061EB841B18446C003552DE /* DeckLinkDeviceInternalOutputCallback.mm */; };
-		5061EB891B18A9E2003552DE /* DeckLinkPixelBufferFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = 5061EB871B18A9E2003552DE /* DeckLinkPixelBufferFrame.h */; };
-		5061EB8A1B18A9E2003552DE /* DeckLinkPixelBufferFrame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5061EB881B18A9E2003552DE /* DeckLinkPixelBufferFrame.cpp */; };
 		95C8B90320E52CA900E9BB0D /* DeckLinkAPIDispatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95C8B8E620E52CA200E9BB0D /* DeckLinkAPIDispatch.cpp */; };
 		95C8B90720E52CA900E9BB0D /* DeckLinkAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 95C8B8EA20E52CA300E9BB0D /* DeckLinkAPI.h */; };
 		95C8B90B20E52CA900E9BB0D /* DeckLinkAPIDiscovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 95C8B8EE20E52CA400E9BB0D /* DeckLinkAPIDiscovery.h */; };
@@ -124,8 +122,6 @@
 		5061EB7E1B17BA36003552DE /* DeckLink_042_Playback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DeckLink_042_Playback.m; sourceTree = "<group>"; };
 		5061EB831B18446C003552DE /* DeckLinkDeviceInternalOutputCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeckLinkDeviceInternalOutputCallback.h; sourceTree = "<group>"; };
 		5061EB841B18446C003552DE /* DeckLinkDeviceInternalOutputCallback.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeckLinkDeviceInternalOutputCallback.mm; sourceTree = "<group>"; };
-		5061EB871B18A9E2003552DE /* DeckLinkPixelBufferFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeckLinkPixelBufferFrame.h; sourceTree = "<group>"; };
-		5061EB881B18A9E2003552DE /* DeckLinkPixelBufferFrame.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeckLinkPixelBufferFrame.cpp; sourceTree = "<group>"; };
 		95C8B8E620E52CA200E9BB0D /* DeckLinkAPIDispatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeckLinkAPIDispatch.cpp; sourceTree = "<group>"; };
 		95C8B8EA20E52CA300E9BB0D /* DeckLinkAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeckLinkAPI.h; sourceTree = "<group>"; };
 		95C8B8EE20E52CA400E9BB0D /* DeckLinkAPIDiscovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeckLinkAPIDiscovery.h; sourceTree = "<group>"; };
@@ -303,8 +299,6 @@
 				5061EB5C1B179014003552DE /* DeckLinkDeviceInternalInputCallback.mm */,
 				5061EB831B18446C003552DE /* DeckLinkDeviceInternalOutputCallback.h */,
 				5061EB841B18446C003552DE /* DeckLinkDeviceInternalOutputCallback.mm */,
-				5061EB871B18A9E2003552DE /* DeckLinkPixelBufferFrame.h */,
-				5061EB881B18A9E2003552DE /* DeckLinkPixelBufferFrame.cpp */,
 				30B40234280EDB950027B1C0 /* DecklinkMetalBufferFrame.h */,
 				30B4023C280EDDDE0027B1C0 /* DecklinkMetalBufferFrame.mm */,
 			);
@@ -353,7 +347,6 @@
 				5061EB6A1B17A45F003552DE /* DeckLinkVideoConnection+Internal.h in Headers */,
 				5061EB661B179F35003552DE /* DeckLinkAudioConnection.h in Headers */,
 				5061EAF71B16582D003552DE /* DeckLinkDevice+Devices.h in Headers */,
-				5061EB891B18A9E2003552DE /* DeckLinkPixelBufferFrame.h in Headers */,
 				95C8B91120E52CA900E9BB0D /* DeckLinkAPITypes.h in Headers */,
 				5061EB351B172E47003552DE /* CMFormatDescription+DeckLink.h in Headers */,
 				5061E94A1B164177003552DE /* DeckLink.h in Headers */,
@@ -477,7 +470,6 @@
 				30B4023D280EDDDE0027B1C0 /* DecklinkMetalBufferFrame.mm in Sources */,
 				5061EB2A1B16E946003552DE /* DeckLinkDevice+Capture.mm in Sources */,
 				5061EAE51B164E0A003552DE /* DeckLinkDeviceBrowser.mm in Sources */,
-				5061EB8A1B18A9E2003552DE /* DeckLinkPixelBufferFrame.cpp in Sources */,
 				5061EB6B1B17A45F003552DE /* DeckLinkVideoConnection+Internal.mm in Sources */,
 				5061EB361B172E47003552DE /* CMFormatDescription+DeckLink.mm in Sources */,
 				5061EADD1B164376003552DE /* DeckLinkInformation.mm in Sources */,
