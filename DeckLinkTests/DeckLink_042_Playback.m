@@ -35,9 +35,12 @@
 	{
 		CMVideoFormatDescriptionRef videoFormatDescription = (__bridge CMVideoFormatDescriptionRef)videoFormatDescription_;
 		
-		NSError *error = nil;
-		XCTAssertTrue([device setPlaybackActiveVideoFormatDescription:videoFormatDescription error:&error], @"%@", error);
-		XCTAssertNil(error);
+		XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s:%@", __FUNCTION__, videoFormatDescription]];
+		[device setPlaybackActiveVideoFormatDescription:videoFormatDescription completedHandler:^(BOOL status, NSError *outError){
+			if (status)
+				[expectation fulfill];
+		}];
+		[self waitForExpectationsWithTimeout:1.0 handler:^(NSError *error) {}];
 	}
 }
 
@@ -53,9 +56,12 @@
 	{
 		CMAudioFormatDescriptionRef audioFormatDescription = (__bridge CMVideoFormatDescriptionRef)audioFormatDescription_;
 		
-		NSError *error = nil;
-		XCTAssertTrue([device setPlaybackActiveAudioFormatDescription:audioFormatDescription error:&error], @"%@", error);
-		XCTAssertNil(error);
+		XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s:%@", __FUNCTION__, audioFormatDescription]];
+		[device setPlaybackActiveAudioFormatDescription:audioFormatDescription completedHandler:^(BOOL status, NSError *outError){
+			if (status)
+				[expectation fulfill];
+		}];
+		[self waitForExpectationsWithTimeout:1.0 handler:^(NSError *error) {}];
 	}
 }
 
@@ -69,14 +75,21 @@
 	
 	for (NSString *keyingMode in keyingModes)
 	{
-		NSError *error = nil;
-		XCTAssertTrue([device setPlaybackActiveKeyingMode:keyingMode alpha:1.0 error:&error]);
-		XCTAssertNil(error);
+		XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s:%@", __FUNCTION__, keyingMode]];
+		[device setPlaybackActiveKeyingMode:keyingMode alpha:1 completedHandler:^(BOOL status, NSError *outError){
+			if (status)
+				[expectation fulfill];
+		}];
+		[self waitForExpectationsWithTimeout:1.0 handler:^(NSError *error) {}];
 	}
 	
-	NSError *error = nil;
-	XCTAssertFalse([device setPlaybackActiveKeyingMode:@"Invalid" alpha:1.0 error:&error]);
-	XCTAssertNotNil(error);
+	XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s:Invalid", __FUNCTION__]];
+	expectation.inverted = YES;
+	[device setPlaybackActiveKeyingMode:@"Invalid" alpha:1 completedHandler:^(BOOL status, NSError *outError){
+		if (status)
+			[expectation fulfill];
+	}];
+	[self waitForExpectationsWithTimeout:1.0 handler:^(NSError *error) {}];
 }
 
 @end

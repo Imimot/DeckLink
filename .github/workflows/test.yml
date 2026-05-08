@@ -1,0 +1,15 @@
+name: Build
+
+on: [push]
+
+jobs:
+  test:
+    name: Buid
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        # This builds both DeckLink.framework and the automated tests.
+        # The tests expect a Blackmagic device to be connected, so we can't actually run the tests on GitHub-hosted runners.
+        run: xcodebuild -target DeckLinkTests
