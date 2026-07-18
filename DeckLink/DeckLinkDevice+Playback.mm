@@ -492,9 +492,14 @@
 		}
 
 		IDeckLinkMutableVideoFrame *frame = NULL;
-		if (deckLinkMacOutput->CreateVideoFrameFromCVPixelBufferRef(pixelBuffer, &frame) != S_OK)
+		HRESULT ret = deckLinkMacOutput->CreateVideoFrameFromCVPixelBufferRef(pixelBuffer, &frame);
+		if (ret != S_OK)
 		{
-			NSLog(@"%s:%d: error: CreateVideoFrameFromCVPixelBufferRef failed", __FUNCTION__, __LINE__);
+			if (ret == E_INVALIDARG)
+				NSLog(@"%s:%d: error: CreateVideoFrameFromCVPixelBufferRef failed: E_INVALIDARG (One of the attributes/attachments of the provided CVPixelBuffer is not supported.  The CVPixelBuffer may be missing a value for attachment kCVImageBufferColorPrimariesKey.)", __FUNCTION__, __LINE__);
+			else
+				NSLog(@"%s:%d: error: CreateVideoFrameFromCVPixelBufferRef failed: %x", __FUNCTION__, __LINE__, ret);
+
 			CFRelease(pixelBuffer);
 			return;
 		}
