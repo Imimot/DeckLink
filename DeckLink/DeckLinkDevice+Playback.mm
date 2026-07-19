@@ -42,6 +42,7 @@
 	{
 		BMDPixelFormat pixelFormats[] = {
 			bmdFormat8BitYUV, // == kCVPixelFormatType_422YpCbCr8 == '2vuy'
+			bmdFormat10BitYUVA, // 'Ay10'
 			kDeckLinkPrimaryRGBPixelFormat,  
 		};
 		
@@ -64,9 +65,6 @@
 					{
 						[formatDescriptions addObject:(__bridge id)formatDescription];
 						CFRelease(formatDescription);
-						// TODO: currently only RGBA or YUV is provided. It might make sense to provide both formats in the future and let the client filter.
-						// The UltraStudio 4K supports both, but the UltraStudio Mini Monitor only support YUV.
-						break;
 					}
 				}
 			}

@@ -31,6 +31,10 @@ OSStatus CMVideoFormatDescriptionCreateWithDeckLinkDisplayMode(IDeckLinkDisplayM
 
 OSStatus CMVideoFormatDescriptionGetDeckLinkFrameRate(CMFormatDescriptionRef formatDescription, CMTime *outFrameRate);
 
+unsigned char CMVideoFormatDescriptionIMTGetBitDepth(CMVideoFormatDescriptionRef format);
+bool CMVideoFormatDescriptionIMTHasAlphaChannel(CMVideoFormatDescriptionRef format);
+NSString *CMVideoFormatDescriptionIMTGetSummary(CMVideoFormatDescriptionRef format);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

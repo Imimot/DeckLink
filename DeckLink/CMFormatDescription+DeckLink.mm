@@ -121,3 +121,35 @@ OSStatus CMVideoFormatDescriptionGetDeckLinkFrameRate(CMFormatDescriptionRef for
 	*outFrameRate = frameRate;
 	return noErr;
 }
+
+unsigned char CMVideoFormatDescriptionIMTGetBitDepth(CMVideoFormatDescriptionRef format)
+{
+	FourCharCode subtype = CMFormatDescriptionGetMediaSubType(format);
+	if (subtype == bmdFormat8BitYUV || subtype == bmdFormat8BitBGRA)
+		return 8;
+	if (subtype == bmdFormat10BitYUVA)
+		return 10;
+
+	return 0;
+}
+
+bool CMVideoFormatDescriptionIMTHasAlphaChannel(CMVideoFormatDescriptionRef format)
+{
+	FourCharCode subtype = CMFormatDescriptionGetMediaSubType(format);
+	if (subtype == bmdFormat8BitBGRA || subtype == bmdFormat10BitYUVA)
+		return true;
+
+	return false;
+}
+
+NSString *CMVideoFormatDescriptionIMTGetSummary(CMVideoFormatDescriptionRef format)
+{
+	NSDictionary *formatExtensions = (NSDictionary *)CMFormatDescriptionGetExtensions(format);
+	NSString *blackmagicFormatName = formatExtensions[(NSString *)kCMFormatDescriptionExtension_FormatName];
+
+	FourCharCode subtypeInt = CMFormatDescriptionGetMediaSubType(format);
+	char subtypeCharZ[5] = {0};
+	*(UInt32*)subtypeCharZ = CFSwapInt32HostToBig(subtypeInt);
+
+	return [NSString stringWithFormat:@"%@ (%s)", blackmagicFormatName, subtypeCharZ];
+}
