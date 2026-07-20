@@ -642,7 +642,7 @@ static inline void CaptureQueue_dispatch_sync(dispatch_queue_t queue, dispatch_b
 				IDeckLinkMacVideoBuffer *macVideoBuffer = NULL;
 				if (videoFrame->QueryInterface(IID_IDeckLinkMacVideoBuffer, (void **)&macVideoBuffer) != S_OK)
 				{
-					NSLog(@"%s:%d: error: couldn't get IDeckLinkMacVideoBuffer instance", __FUNCTION__, __LINE__);
+					NSLog(@"%s:%d: error: couldn't get IDeckLinkMacVideoBuffer instance; maybe you need to install newer Blackmagic Desktop Video drivers", __FUNCTION__, __LINE__);
 					shouldReportDroppedFrame = YES;
 				}
 				

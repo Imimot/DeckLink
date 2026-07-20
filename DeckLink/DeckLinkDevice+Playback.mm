@@ -400,6 +400,54 @@
 
 }
 
+/**
+ * Allocates a CVPixelBufferRef which the caller can populate and play back.
+ *
+ * Based loosely on the Blackmagic MetalKeyer sample code's `[DeckLinkOutputDevice createVideoFrame:withPixelFormat:]` and `[MetalKeyer renderVideoFrame]` methods.
+ */
+- (CVPixelBufferRef)createCVPixelBufferWithWidth:(uint32_t)pixelsWide height:(uint32_t)pixelsHigh
+{
+	// Wait for setPlaybackActiveVideoFormatDescription's block to complete.
+	dispatch_sync(self.playbackQueue, ^{});
+
+	BMDPixelFormat pixelFormat = CMFormatDescriptionGetMediaSubType(self.playbackActiveVideoFormatDescription);
+	int32_t rowBytes;
+	HRESULT ret = deckLinkOutput->RowBytesForPixelFormat(pixelFormat, pixelsWide, &rowBytes);
+	if (ret != S_OK)
+	{
+		NSLog(@"%s:%d: error: IDeckLinkOutput::RowBytesForPixelFormat(0x%x, %d) returned 0x%x; maybe this device doesn't support the specified pixelformat or size", __FUNCTION__, __LINE__, pixelFormat, pixelsWide, ret);
+		return nil;
+	}
+
+	IDeckLinkMutableVideoFrame *videoFrame;
+	ret = deckLinkOutput->CreateVideoFrame(pixelsWide, pixelsHigh, rowBytes, pixelFormat, bmdVideoOutputFlagDefault, &videoFrame);
+	if (ret != S_OK)
+	{
+		NSLog(@"%s:%d: error: IDeckLinkOutput::CreateVideoFrame(%d, %d, %d, 0x%x) returned 0x%x; maybe this device doesn't support the specified pixelformat or size", __FUNCTION__, __LINE__, pixelsWide, pixelsHigh, rowBytes, pixelFormat, ret);
+		return nil;
+	}
+
+	IDeckLinkMacVideoBuffer *macVideoBuffer = NULL;
+	ret = videoFrame->QueryInterface(IID_IDeckLinkMacVideoBuffer, (void **)&macVideoBuffer);
+	if (ret != S_OK)
+	{
+		NSLog(@"%s:%d: error: IDeckLinkMutableVideoFrame::QueryInterface(IDeckLinkMacVideoBuffer) returned 0x%x; maybe you need to install newer Blackmagic Desktop Video drivers", __FUNCTION__, __LINE__, ret);
+		videoFrame->Release();
+		return nil;
+	}
+
+	CVPixelBufferRef pixelBuffer = NULL;
+	ret = macVideoBuffer->CreateCVPixelBufferRef((void **)&pixelBuffer);
+	if (ret != S_OK)
+	{
+		NSLog(@"%s:%d: error: IDeckLinkMacVideoBuffer::CreateCVPixelBufferRef() returned 0x%x", __FUNCTION__, __LINE__, ret);
+		videoFrame->Release();
+		return nil;
+	}
+
+	return pixelBuffer;
+}
+
 - (void)startScheduledPlaybackWithStartTime:(NSUInteger)startTime timeScale:(NSUInteger)timeScale
 {
 	dispatch_async(self.playbackQueue, ^{
@@ -424,7 +472,7 @@
 		IDeckLinkMacOutput *deckLinkMacOutput = NULL;
 		if (deckLinkOutput->QueryInterface(IID_IDeckLinkMacOutput, (void **)&deckLinkMacOutput) != S_OK)
 		{
-			NSLog(@"%s:%d: error: couldn't get IDeckLinkMacOutput instance", __FUNCTION__, __LINE__);
+			NSLog(@"%s:%d: error: couldn't get IDeckLinkMacOutput instance; maybe you need to install newer Blackmagic Desktop Video drivers", __FUNCTION__, __LINE__);
 			CFRelease(pixelBuffer);
 			return;
 		}
@@ -484,7 +532,7 @@
 		IDeckLinkMacOutput *deckLinkMacOutput = NULL;
 		if (deckLinkOutput->QueryInterface(IID_IDeckLinkMacOutput, (void **)&deckLinkMacOutput) != S_OK)
 		{
-			NSLog(@"%s:%d: error: couldn't get IDeckLinkMacOutput instance", __FUNCTION__, __LINE__);
+			NSLog(@"%s:%d: error: couldn't get IDeckLinkMacOutput instance; maybe you need to install newer Blackmagic Desktop Video drivers", __FUNCTION__, __LINE__);
 			CFRelease(pixelBuffer);
 			return;
 		}

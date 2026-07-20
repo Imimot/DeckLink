@@ -21,6 +21,8 @@
 @property (atomic, strong, readonly) NSString *playbackActiveKeyingMode;
 - (void)setPlaybackActiveKeyingMode:(NSString *)keyingMode alpha:(float)alpha completedHandler:(void (^)(BOOL status, NSError *outError))callbackBlock;
 
+- (CVPixelBufferRef)createCVPixelBufferWithWidth:(uint32_t)pixelsWide height:(uint32_t)pixelsHigh;
+
 - (void)startScheduledPlaybackWithStartTime:(NSUInteger)startTime timeScale:(NSUInteger)timeScale;
 - (void)schedulePlaybackOfPixelBuffer:(CVPixelBufferRef)pixelBuffer displayTime:(NSUInteger)displayTime frameDuration:(NSUInteger)frameDuration timeScale:(NSUInteger)timeScale;
 - (void)stopScheduledPlaybackWithCompletionHandler:(DeckLinkDeviceStopPlaybackCompletionHandler)completionHandler;
