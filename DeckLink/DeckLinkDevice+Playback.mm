@@ -405,7 +405,7 @@
  *
  * Based loosely on the Blackmagic MetalKeyer sample code's `[DeckLinkOutputDevice createVideoFrame:withPixelFormat:]` and `[MetalKeyer renderVideoFrame]` methods.
  */
-- (CVPixelBufferRef)createCVPixelBufferWithWidth:(uint32_t)pixelsWide height:(uint32_t)pixelsHigh
+- (CVPixelBufferRef)createCVPixelBufferWithWidth:(uint32_t)pixelsWide height:(uint32_t)pixelsHigh colorspace:(CFStringRef)colorspaceName
 {
 	// Wait for setPlaybackActiveVideoFormatDescription's block to complete.
 	dispatch_sync(self.playbackQueue, ^{});
@@ -426,6 +426,32 @@
 		NSLog(@"%s:%d: error: IDeckLinkOutput::CreateVideoFrame(%d, %d, %d, 0x%x) returned 0x%x; maybe this device doesn't support the specified pixelformat or size", __FUNCTION__, __LINE__, pixelsWide, pixelsHigh, rowBytes, pixelFormat, ret);
 		return nil;
 	}
+
+	BMDColorspace blackmagicColorspace;
+	if (CFEqual(colorspaceName, kCGColorSpaceITUR_709))
+		blackmagicColorspace = bmdColorspaceRec709;
+	else if (CFEqual(colorspaceName, kCGColorSpaceITUR_2020))
+	{
+		// For unknown reasons, the Blackmagic DeckLink SDK outputs nothing when Rec2020 colorspace is selected.
+		// As a workaround, use Rec709.
+		// blackmagicColorspace = bmdColorspaceRec2020;
+		blackmagicColorspace = bmdColorspaceRec709;
+	}
+	else
+	{
+		NSLog(@"%s:%d: error: colorspace \"%@\" isn't implemented", __FUNCTION__, __LINE__, colorspaceName);
+		return nil;
+	}
+
+	IDeckLinkVideoFrameMutableMetadataExtensions *videoFrameMetadata = NULL;
+	ret = videoFrame->QueryInterface(IID_IDeckLinkVideoFrameMutableMetadataExtensions, (void **)&videoFrameMetadata);
+	if (ret != S_OK)
+	{
+		NSLog(@"%s:%d: error: IDeckLinkMutableVideoFrame::QueryInterface(IDeckLinkVideoFrameMutableMetadataExtensions) returned 0x%x; maybe you need to install newer Blackmagic Desktop Video drivers", __FUNCTION__, __LINE__, ret);
+		videoFrame->Release();
+		return nil;
+	}
+	videoFrameMetadata->SetInt(bmdDeckLinkFrameMetadataColorspace, blackmagicColorspace);
 
 	IDeckLinkMacVideoBuffer *macVideoBuffer = NULL;
 	ret = videoFrame->QueryInterface(IID_IDeckLinkMacVideoBuffer, (void **)&macVideoBuffer);
