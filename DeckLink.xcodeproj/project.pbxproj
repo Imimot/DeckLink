@@ -61,6 +61,9 @@
 		95C8B91220E52CA900E9BB0D /* DeckLinkAPIModes.h in Headers */ = {isa = PBXBuildFile; fileRef = 95C8B8F520E52CA500E9BB0D /* DeckLinkAPIModes.h */; };
 		95C8B91320E52CA900E9BB0D /* DeckLinkAPIVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 95C8B8F620E52CA500E9BB0D /* DeckLinkAPIVersion.h */; };
 		95C8B91920E52CA900E9BB0D /* DeckLinkAPIStreaming.h in Headers */ = {isa = PBXBuildFile; fileRef = 95C8B8FC20E52CA700E9BB0D /* DeckLinkAPIStreaming.h */; };
+		AAAAAAAA1111111111111111 /* DeckLinkSchedulingTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAA2222222222222222 /* DeckLinkSchedulingTests.mm */; };
+		ABCDEF001111111111111111 /* DeckLinkPlaybackSession.h in Headers */ = {isa = PBXBuildFile; fileRef = ABCDEF002111111111111111 /* DeckLinkPlaybackSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		ABCDEF001222222222222222 /* DeckLinkPlaybackSession.mm in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF002222222222222222 /* DeckLinkPlaybackSession.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,6 +134,9 @@
 		95C8B8F520E52CA500E9BB0D /* DeckLinkAPIModes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeckLinkAPIModes.h; sourceTree = "<group>"; };
 		95C8B8F620E52CA500E9BB0D /* DeckLinkAPIVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeckLinkAPIVersion.h; sourceTree = "<group>"; };
 		95C8B8FC20E52CA700E9BB0D /* DeckLinkAPIStreaming.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeckLinkAPIStreaming.h; sourceTree = "<group>"; };
+		AAAAAAAA2222222222222222 /* DeckLinkSchedulingTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = DeckLinkSchedulingTests.mm; sourceTree = "<group>"; };
+		ABCDEF002111111111111111 /* DeckLinkPlaybackSession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeckLinkPlaybackSession.h; sourceTree = "<group>"; };
+		ABCDEF002222222222222222 /* DeckLinkPlaybackSession.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = DeckLinkPlaybackSession.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -197,6 +203,7 @@
 				5061E9561B164177003552DE /* DeckLink_011_InformationTests.m */,
 				5061EAF91B165CCE003552DE /* DeckLink_021_DeviceBrowserTests.m */,
 				5061EB371B172F4A003552DE /* DeckLink_031_FormatDescriptionTests.mm */,
+				AAAAAAAA2222222222222222 /* DeckLinkSchedulingTests.mm */,
 				5061EB431B174D82003552DE /* DeckLink_041_Capture.m */,
 				5061EB7E1B17BA36003552DE /* DeckLink_042_Playback.m */,
 				5061E9541B164177003552DE /* Supporting Files */,
@@ -258,6 +265,8 @@
 				5061EB271B16E946003552DE /* DeckLinkDevice+Capture.h */,
 				5061EB281B16E946003552DE /* DeckLinkDevice+Capture.mm */,
 				5061EB701B17AF82003552DE /* DeckLinkDevice+Playback.h */,
+				ABCDEF002111111111111111 /* DeckLinkPlaybackSession.h */,
+				ABCDEF002222222222222222 /* DeckLinkPlaybackSession.mm */,
 				5061EB711B17AF82003552DE /* DeckLinkDevice+Playback.mm */,
 				5061EB5A1B178F72003552DE /* Internal */,
 			);
@@ -354,6 +363,7 @@
 				5061EAE41B164E0A003552DE /* DeckLinkDeviceBrowser.h in Headers */,
 				5061EB111B1667A5003552DE /* DeckLinkDeviceIODirection.h in Headers */,
 				5061EB721B17AF82003552DE /* DeckLinkDevice+Playback.h in Headers */,
+				ABCDEF001111111111111111 /* DeckLinkPlaybackSession.h in Headers */,
 				95C8B90F20E52CA900E9BB0D /* DeckLinkAPIConfiguration.h in Headers */,
 				5061EB6E1B17A8A0003552DE /* DeckLinkAudioConnection+Internal.h in Headers */,
 				95C8B91220E52CA900E9BB0D /* DeckLinkAPIModes.h in Headers */,
@@ -475,6 +485,7 @@
 				5061EB361B172E47003552DE /* CMFormatDescription+DeckLink.mm in Sources */,
 				5061EADD1B164376003552DE /* DeckLinkInformation.mm in Sources */,
 				5061EB731B17AF82003552DE /* DeckLinkDevice+Playback.mm in Sources */,
+				ABCDEF001222222222222222 /* DeckLinkPlaybackSession.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -486,6 +497,7 @@
 				5061EAFA1B165CCE003552DE /* DeckLink_021_DeviceBrowserTests.m in Sources */,
 				5061EB441B174D82003552DE /* DeckLink_041_Capture.m in Sources */,
 				5061EB381B172F4A003552DE /* DeckLink_031_FormatDescriptionTests.mm in Sources */,
+				AAAAAAAA1111111111111111 /* DeckLinkSchedulingTests.mm in Sources */,
 				5061EB7F1B17BA36003552DE /* DeckLink_042_Playback.m in Sources */,
 				5061EB421B1732B0003552DE /* DeckLink_001_APITests.m in Sources */,
 			);
@@ -553,7 +565,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -607,7 +619,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -635,7 +647,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 14;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.boinx.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -662,7 +674,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 14;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.boinx.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -689,6 +701,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.boinx.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -710,6 +723,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.boinx.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

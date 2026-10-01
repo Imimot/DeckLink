@@ -86,7 +86,18 @@
 {
 	if (deckLinkOutput != NULL)
 	{
-		deckLinkOutput->Release();
+		// Stop/disable before dropping retained scheduled buffers or the callback.
+        deckLinkOutput->StopScheduledPlayback(0, NULL, 0);
+        deckLinkOutput->DisableAudioOutput();
+        deckLinkOutput->DisableVideoOutput();
+        deckLinkOutput->SetScheduledFrameCompletionCallback(NULL);
+        deckLinkOutput->SetAudioCallback(NULL);
+        [_scheduledFrames removeAllObjects];
+        if (deckLinkOutputCallback) {
+            deckLinkOutputCallback->Release();
+            deckLinkOutputCallback = NULL;
+        }
+        deckLinkOutput->Release();
 		deckLinkOutput = NULL;
 	}
 	

@@ -34,6 +34,6 @@ public:
 	ULONG Release(void);
 	
 private:
-	id<DeckLinkDeviceInternalOutputCallbackDelegate> delegate;
+	__weak id<DeckLinkDeviceInternalOutputCallbackDelegate> delegate;
 	atomic_int refCount;
 };

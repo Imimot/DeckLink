@@ -31,3 +31,5 @@ FOUNDATION_EXPORT const unsigned char DeckLinkVersionString[];
 
 #import <DeckLink/DeckLinkDeviceBrowser.h>
 
+
+#import <DeckLink/DeckLinkPlaybackSession.h>

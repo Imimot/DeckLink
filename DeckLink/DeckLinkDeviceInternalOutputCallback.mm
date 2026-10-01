@@ -10,33 +10,37 @@ refCount(1)
 
 HRESULT DeckLinkDeviceInternalOutputCallback::ScheduledFrameCompleted(IDeckLinkVideoFrame *completedFrame, BMDOutputFrameCompletionResult result)
 {
-	if([delegate respondsToSelector:@selector(scheduledFrameCompleted:result:)])
+	id<DeckLinkDeviceInternalOutputCallbackDelegate> target = delegate;
+	if([target respondsToSelector:@selector(scheduledFrameCompleted:result:)])
 	{
-		[delegate scheduledFrameCompleted:completedFrame result:result];
+		[target scheduledFrameCompleted:completedFrame result:result];
 	}
 	return S_OK;
 }
 
 HRESULT DeckLinkDeviceInternalOutputCallback::ScheduledPlaybackHasStopped(void)
 {
-	if([delegate respondsToSelector:@selector(scheduledPlaybackHasStopped)])
+	id<DeckLinkDeviceInternalOutputCallbackDelegate> target = delegate;
+	if([target respondsToSelector:@selector(scheduledPlaybackHasStopped)])
 	{
-		[delegate scheduledPlaybackHasStopped];
+		[target scheduledPlaybackHasStopped];
 	}
 	return S_OK;
 }
 
 HRESULT DeckLinkDeviceInternalOutputCallback::RenderAudioSamples(bool preroll)
 {
-	if([delegate respondsToSelector:@selector(renderAudioSamplesPreroll:)])
+	id<DeckLinkDeviceInternalOutputCallbackDelegate> target = delegate;
+	if([target respondsToSelector:@selector(renderAudioSamplesPreroll:)])
 	{
-		[delegate renderAudioSamplesPreroll:preroll ? YES : NO];
+		[target renderAudioSamplesPreroll:preroll ? YES : NO];
 	}
 	return S_OK;
 }
 
 HRESULT DeckLinkDeviceInternalOutputCallback::QueryInterface(REFIID iid, LPVOID *ppv)
 {
+	if (!ppv) return E_POINTER;
 	*ppv = NULL;
 	
 	CFUUIDBytes iunknown = CFUUIDGetUUIDBytes(IUnknownUUID);
@@ -66,7 +70,7 @@ HRESULT DeckLinkDeviceInternalOutputCallback::QueryInterface(REFIID iid, LPVOID 
 
 ULONG DeckLinkDeviceInternalOutputCallback::AddRef(void)
 {
-	return atomic_fetch_add(&refCount, 1);
+	return atomic_fetch_add(&refCount, 1) + 1;
 }
 
 ULONG DeckLinkDeviceInternalOutputCallback::Release(void)
