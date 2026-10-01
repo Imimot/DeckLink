@@ -1,4 +1,4 @@
-# DeckLink — Imimot fork
+# DeckLink
 
 A macOS Objective-C framework for Blackmagic Design DeckLink and UltraStudio devices, maintained by Imimot.
 
