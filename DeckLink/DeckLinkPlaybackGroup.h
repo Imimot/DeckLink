@@ -67,7 +67,8 @@ typedef NS_ENUM(NSUInteger, DeckLinkPlaybackGroupReferencePolicy) {
 /// The first set after open fills preroll, repeating each output's buffer to its device's
 /// minimum. Later sets are dropped until the group runs. While running, every output is
 /// scheduled at the same time: the next output frame boundary plus one frame of lead for
-/// native preparation. A set that would not advance past the last scheduled time is dropped.
+/// native preparation. A second set submitted within one output frame takes the following
+/// slot; any further set that would not advance past the last scheduled time is dropped.
 /// Completion runs on the group's callback queue with the scheduled time, or kCMTimeInvalid
 /// with a nil error when the set was dropped. An output's rejection is reported as the error;
 /// rejections during preroll fail the group. Do not modify submitted buffers.

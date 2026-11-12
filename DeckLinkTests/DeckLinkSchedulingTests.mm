@@ -413,25 +413,29 @@ static void DrainGroup(DeckLinkPlaybackGroup *group, NSArray<DeckLinkDevice *> *
 - (void)testRetentionCapSkipsVideoWhileAudioContinues {
     [self start];
     __block NSUInteger rejected = 0;
-    for (int time : {400,1200,2000,2800}) {
+    for (int time : {400,1200,2000,2800,3600}) {
         [self tick:time];
         [group submitPixelBuffers:@[(__bridge id)buffer] completion:^(CMTime t, NSError *error) {
             if (error.code == DeckLinkPlaybackGroupFrameRejected) ++rejected;
         }];
         [self drain];
     }
-    // Frames 0, 2002 and 3003 fill max(3, preroll); 4004 and 5005 are skipped.
-    XCTAssertEqual(atomic_load(&liveFrames), 3); XCTAssertEqual(rejected, 2u);
-    XCTAssertNil(group.error); XCTAssertEqual(consumed, 3601u);
+    // Frames 0, 2002, 3003 and 4004 fill max(3, preroll) + 1; 5005 and 6006 are skipped.
+    XCTAssertEqual(atomic_load(&liveFrames), 4); XCTAssertEqual(rejected, 2u);
+    XCTAssertNil(group.error); XCTAssertEqual(consumed, 4401u);
     driver->complete(bmdOutputFrameCompleted); [self drain];
-    [self tick:3600]; [self submit]; XCTAssertEqual(atomic_load(&liveFrames), 3);
-    XCTAssertEqual(driver->videoTimes.back(), 6006);
+    [self tick:4400]; [self submit]; XCTAssertEqual(atomic_load(&liveFrames), 4);
+    XCTAssertEqual(driver->videoTimes.back(), 7007);
 }
-- (void)testSetsFasterThanTheOutputAreDropped {
+// Two sets inside one output frame: the second takes the following slot. A third would add latency.
+- (void)testSecondSetInOneOutputFrameTakesTheNextSlotAndFurtherSetsAreDropped {
     [self start]; [self tick:400];
-    [group submitPixelBuffers:@[(__bridge id)buffer] completion:nil];
-    [group submitPixelBuffers:@[(__bridge id)buffer] completion:nil]; [self drain];
-    XCTAssertTrue(driver->videoTimes == (std::vector<int64_t>{0,2002})); XCTAssertNil(group.error);
+    for (int set = 0; set < 3; ++set) [group submitPixelBuffers:@[(__bridge id)buffer] completion:nil];
+    [self drain];
+    XCTAssertTrue(driver->videoTimes == (std::vector<int64_t>{0,2002,3003})); XCTAssertNil(group.error);
+    // The output frame the jittered renderer skipped: the next set is back on the ordinary lead.
+    [self tick:2000]; [self submit];
+    XCTAssertTrue(driver->videoTimes == (std::vector<int64_t>{0,2002,3003,4004})); XCTAssertNil(group.error);
 }
 - (void)testBlockedGroupCallbacksCannotDelayAudioOrVideo {
     [self start];
@@ -994,12 +998,17 @@ static void DrainGroup(DeckLinkPlaybackGroup *group, NSArray<DeckLinkDevice *> *
     }];
     [self waitForExpectations:@[running] timeout:2];
     for (NSUInteger i = 0; i < 2; ++i) [devices[i] performPlaybackSync:^{ XCTAssertEqual(drivers[i]->videoTimes.back(), 7007); }];
+    XCTestExpectation *deferred = [self expectationWithDescription:@"second set in one output frame"];
+    [group submitPixelBuffers:self.frameSet completion:^(CMTime time, NSError *error) {
+        XCTAssertNil(error); XCTAssertEqual(CMTimeCompare(time, CMTimeMake(8008,60000)), 0); [deferred fulfill];
+    }];
+    [self waitForExpectations:@[deferred] timeout:2];
     XCTestExpectation *dropped = [self expectationWithDescription:@"set rendered faster than output"];
     [group submitPixelBuffers:self.frameSet completion:^(CMTime time, NSError *error) {
         XCTAssertNil(error); XCTAssertFalse(CMTIME_IS_VALID(time)); [dropped fulfill];
     }];
     [self waitForExpectations:@[dropped] timeout:2];
-    for (NSUInteger i = 0; i < 2; ++i) [devices[i] performPlaybackSync:^{ XCTAssertEqual(drivers[i]->videoTimes.size(), 3u); }];
+    for (NSUInteger i = 0; i < 2; ++i) [devices[i] performPlaybackSync:^{ XCTAssertEqual(drivers[i]->videoTimes.size(), 4u); }];
     XCTAssertEqual([self calls:"start"], 1u);
 }
 - (void)testFrameSetNeedsOneBufferPerMember {

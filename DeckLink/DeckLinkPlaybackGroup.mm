@@ -388,8 +388,14 @@ static void CloseMembers(NSArray<DeckLinkPlaybackSession *> *members, dispatch_q
         if (status != S_OK) { finish(-1, NativeGroupError(status)); return; }
         // One frame of lead covers asynchronous native preparation.
         int64_t target = next + duration.value;
-        // A set rendered faster than the output would repeat a slot; keep latency fixed by dropping it.
-        if (target <= self->_lastSubmittedTime) { finish(-1, nil); return; }
+        // Submission jitter can put two sets inside one output frame and none in the next. The
+        // second set takes the following slot, so neither is lost and no slot repeats. That is
+        // the only extra lead allowed: a renderer running faster than the output would add
+        // latency with every further set, so those are dropped.
+        if (target <= self->_lastSubmittedTime) {
+            target = self->_lastSubmittedTime + duration.value;
+            if (target > next + 2 * duration.value) { finish(-1, nil); return; }
+        }
         self->_lastSubmittedTime = target;
         for (NSUInteger i = 0; i < members.count; ++i) submit(i, target);
         dispatch_group_notify(accepted, self->_queue, ^{ finish(target, FrameError(rejection)); });

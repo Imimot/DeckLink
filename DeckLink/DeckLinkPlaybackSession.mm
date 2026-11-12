@@ -128,8 +128,9 @@ typedef NS_ENUM(NSUInteger, DeckLinkSessionState) {
         if (!buffer || target < 0 || target % self->_frameDuration.value || target > INT64_MAX - self->_frameDuration.value) { accepted(E_INVALIDARG); return; }
         if (self->_state != DeckLinkSessionReady && self->_state != DeckLinkSessionPrerolling && self->_state != DeckLinkSessionRunning) { accepted(E_ACCESSDENIED); return; }
         __weak typeof(self) weakSelf = self;
+        // One frame beyond the steady depth: a set deferred by the group for submission jitter stays in flight a frame longer.
         [self->_device enqueuePlaybackPixelBuffer:buffer frameDuration:self->_frameDuration.value timeScale:self->_frameDuration.timescale
-            maximumFrames:MAX((NSUInteger)3, self->_minimumVideoPreroll) displayTime:^int64_t {
+            maximumFrames:MAX((NSUInteger)3, self->_minimumVideoPreroll) + 1 displayTime:^int64_t {
                 typeof(self) session = weakSelf;
                 if (!session) return -1;
                 int64_t next = [session nextVideoTime];
